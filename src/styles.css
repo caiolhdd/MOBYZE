@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { font-family: Manrope, sans-serif; color-scheme: dark; background:#030711; }
+html { scroll-behavior:smooth; scroll-padding-top:90px; } body { margin:0; min-width:320px; } body > *:not(#root) { display:none !important; }
+.text-gradient { background:linear-gradient(100deg,#1ca6ff,#7de7ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.hero-grid { position:relative; } .hero-grid:before { content:""; position:absolute; z-index:-1; width:650px; height:650px; right:-180px; top:-130px; border-radius:50%; background:radial-gradient(circle,rgba(0,140,255,.24),transparent 65%); filter:blur(16px); }
+.hero-art { position:relative; min-height:440px; display:grid; place-items:center; } .hero-art img { position:relative; z-index:2; max-width:88%; max-height:430px; object-fit:contain; filter:drop-shadow(0 28px 35px rgba(0,0,0,.7)); animation:float 6s ease-in-out infinite; }
+.hero-orbit { position:absolute; width:min(440px,85vw); aspect-ratio:1; border:1px solid rgba(41,199,255,.5); border-radius:50%; box-shadow:0 0 70px rgba(0,140,255,.2), inset 0 0 70px rgba(0,140,255,.08); animation:orbit 8s ease-in-out infinite; }
+.hero-note { position:absolute; right:4%; bottom:16%; z-index:3; transform:rotate(-7deg); font-size:clamp(1.4rem,3vw,2.5rem); font-style:italic; font-weight:900; line-height:.95; text-shadow:0 0 25px rgba(0,170,255,.5); }.hero-note span { color:#6de4ff; }
+.product-card { animation:rise .6s both; transition:transform .25s,border-color .25s,background .25s; }.product-card:hover { transform:translateY(-7px); border-color:rgba(103,232,249,.5); background:rgba(255,255,255,.07); } .product-image { animation:float 5s ease-in-out infinite; } .fake-phone { transform:rotate(-9deg); }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} } @keyframes orbit { 0%,100%{transform:scale(.98);opacity:.65} 50%{transform:scale(1.04);opacity:1} } @keyframes rise { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce) { *,*:before,*:after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+@media (max-width:640px) { .hero-art { min-height:300px; } .hero-art img { max-height:300px; } .hero-grid:before { width:360px; height:360px; right:-120px; } }
