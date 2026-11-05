@@ -1,58 +1,77 @@
-# CHIQ CELL — site
+# Mobyze · página principal
 
-Site em React + TypeScript + Tailwind (Vite).
+Página inicial da Mobyze (sites e aplicativos), em React + TypeScript + Tailwind, com Vite.
+O mesmo deploy serve também o site de cliente **CHIQ CELL** em `/chiqcell` (ver abaixo).
+As decisões visuais estão em [`DESIGN.md`](DESIGN.md).
 
 ## Rodar
+
 ```bash
 npm install
-npm run dev      # site em http://localhost:5173 e painel em http://localhost:5173/admin.html
-npm run build    # gera a pasta dist/ para publicar
+npm run dev      # desenvolvimento
+npm run build    # checa tipos e gera dist/
+npm test         # unitários (Vitest)
+npm run test:e2e # ponta a ponta (Playwright) contra o build de produção
+```
+O CI (`.github/workflows/ci.yml`) roda typecheck, testes, build e e2e a cada push.
+
+## Rotas
+
+| Caminho | Site |
+|---|---|
+| `/` (e qualquer outro) | Mobyze |
+| `/chiqcell`, `/chiqcell/...` | CHIQ CELL |
+
+`src/main.tsx` decide pelo caminho (`src/rotas.ts`) e carrega **só** o chunk do site pedido, cada um com o próprio CSS e config Tailwind (`tailwind.config.js` / `tailwind.chiqcell.config.js`), para os temas não vazarem um no outro.
+O roteamento é no cliente porque a hospedagem faz fallback de SPA para o `index.html`; os e2e validam isso no build de produção.
+Para adicionar outro site de cliente: nova pasta em `src/<cliente>/` com `main.tsx` exportando `montar()`, uma regra em `src/rotas.ts` e um config Tailwind próprio.
+
+## Contato
+
+Copie `.env.example` para `.env` e preencha o WhatsApp (país + DDD + número, só dígitos):
+
+```
+VITE_WHATSAPP_NUMBER=5511999999999
 ```
 
-## Testes
-```bash
-npm test           # unitários (Vitest): regras do catálogo e schema/dados publicados
-npm run test:e2e   # ponta a ponta (Playwright, desktop + mobile): filtros, URL, janela, orçamento, comparação, painel
-npm run typecheck
-```
-O CI (`.github/workflows/ci.yml`) roda tudo isso a cada push.
+Sem a variável, todos os botões de contato abrem o DM do Instagram `@somosmobyze`.
 
 ## Estrutura
+
 ```
-index.html                     entrada do site (React)
-src/App.tsx                    página (topo, catálogo, sobre, vendedores, contato)
-src/data/catalogo.json         DADOS: loja, vendedores e produtos (fonte única)
-src/data/schema.ts             formato e validação dos dados (zod)
-src/features/catalogo/         catálogo: filtros, busca, ordenação, comparação, card, janela de detalhes/orçamento
-src/components/ui/             botão, card, badge, dialog (<dialog> nativo)
-public/img/                    fotos dos aparelhos (referencie como "/img/arquivo.jpg")
-admin.html, js/admin*.js       PAINEL de edição (só em `npm run dev`; não entra no build)
+src/
+├── App.tsx            composição da página e estado do serviço escolhido
+├── config.ts          Instagram e WhatsApp
+├── data/              serviços e caminhos ("por onde começar")
+├── lib/contact.ts     monta a mensagem e o link do canal
+├── sections/          Header, Hero, Statement, Services, Paths, Contact, Footer
+├── components/        Logo, Icons, Button, Reveal
+├── styles.css         tokens de cor e movimento
+├── mobyze.tsx         boot do site da Mobyze
+├── main.tsx, rotas.ts roteador de entrada
+└── chiqcell/          site CHIQ CELL (isolado, ver abaixo)
 ```
 
-## Catálogo
-- Filtro por linha, busca e ordenação ficam na URL (`?linha=15&q=pro&ordem=menor-preco`): o link é compartilhável e o botão "voltar" funciona.
-- Produto sem preço aparece como **Sob consulta**; sem foto (ou com foto quebrada), aparece a arte da cor escolhida.
-- Campos opcionais por produto: `preco`, `foto`, `condicao` (`"novo"` | `"seminovo"`), `bateria` (0–100), `disponivel` (`false` = esgotado).
-- **Comparar:** marque até 3 aparelhos (botão "+" na foto) e clique em "Comparar". A tabela tem a opção "Mostrar só as diferenças"; a seleção fica na URL (`?comparar=iphone-15,iphone-16`).
-- "Pedir orçamento" abre a janela já na escolha do vendedor; a mensagem do WhatsApp vai com o nome do aparelho.
-- O `catalogo.json` é validado ao carregar: dado inválido quebra o build/dev em vez de quebrar o site em silêncio.
+## Skills do projeto
 
-## Painel de edição (admin.html)
-Com `npm run dev` rodando, abra `/admin.html`. As alterações ficam salvas como rascunho no navegador e aparecem no site **do dev server, no mesmo navegador**.
-**Para publicar:** clique em **Baixar catalogo.json**, substitua `src/data/catalogo.json` e rode `npm run build`.
+`.claude/skills/ui-humanizer` e `.claude/skills/revenue-centric-design`.
+Auditoria de interface: `python3 -I .claude/skills/ui-humanizer/scripts/audit.py index.html src`
 
-O painel não tem senha e não é incluído no build de produção — publique só a pasta `dist/`.
+## CHIQ CELL (`/chiqcell`)
 
-## Cores
-Cores e utilitários estão nas classes Tailwind dos componentes e em `src/styles.css`.
+Catálogo de aparelhos com busca, filtros e ordenação na URL, comparação de até 3 modelos e pedido de orçamento pelo WhatsApp já citando o aparelho.
 
-## Textos fixos (garantia, 21x, frete, sobre nós)
-Estão em `src/App.tsx`. Procure o texto e troque.
+```
+src/chiqcell/
+├── main.tsx              boot (aplica título/metas próprios)
+├── App.tsx               página
+├── data/catalogo.json    DADOS: loja, vendedores e produtos (fonte única, validada por data/schema.ts)
+├── features/catalogo/    catálogo, comparação, janela de detalhes/orçamento e regras puras
+└── components/ui/        botão, card, badge, dialog (<dialog> nativo)
+public/chiqcell/img/      fotos (referencie como "/chiqcell/img/arquivo.jpg")
+tools/chiqcell-admin/     painel de edição (só em dev; não entra no build)
+```
 
-## Colocar no ar (grátis)
-Rode `npm run build` e suba a pasta `dist/` em Netlify, Vercel, GitHub Pages ou Cloudflare Pages (ou por FTP).
-
-## Importante
-- Os telefones dos vendedores são de exemplo. Troque antes de publicar.
-- Confira as características de cada modelo no site da Apple Brasil.
-- Use apenas fotos que você tenha direito de usar comercialmente (fotos próprias ou do fornecedor).
+- Campos opcionais por produto: `preco` (sem ele: "Sob consulta"), `foto`, `condicao` (`"novo"`|`"seminovo"`), `bateria` (0–100), `disponivel` (`false` = esgotado).
+- **Painel:** com `npm run dev`, abra `/tools/chiqcell-admin/`. As alterações ficam como rascunho no navegador e aparecem em `/chiqcell` no dev server. Para publicar: **Baixar catalogo.json**, substituir `src/chiqcell/data/catalogo.json` e fazer o deploy.
+- Antes de publicar: trocar os telefones de exemplo dos vendedores e usar só fotos com direito de uso comercial.

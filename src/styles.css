@@ -1,17 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@config "../tailwind.config.js";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root { font-family: Manrope, sans-serif; color-scheme: dark; background:#030711; }
-html { scroll-behavior:smooth; scroll-padding-top:90px; } body { margin:0; min-width:320px; padding-bottom:var(--altura-barra-comparacao,0px); }
-.text-gradient { background:linear-gradient(100deg,#1ca6ff,#7de7ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.hero-grid { position:relative; } .hero-grid:before { content:""; position:absolute; z-index:-1; width:650px; height:650px; right:-180px; top:-130px; border-radius:50%; background:radial-gradient(circle,rgba(0,140,255,.24),transparent 65%); filter:blur(16px); }
-.hero-art { position:relative; min-height:440px; display:grid; place-items:center; } .hero-art img { position:relative; z-index:2; max-width:88%; max-height:430px; object-fit:contain; filter:drop-shadow(0 28px 35px rgba(0,0,0,.7)); animation:float 6s ease-in-out infinite; }
-.hero-orbit { position:absolute; width:min(440px,85vw); aspect-ratio:1; border:1px solid rgba(41,199,255,.5); border-radius:50%; box-shadow:0 0 70px rgba(0,140,255,.2), inset 0 0 70px rgba(0,140,255,.08); animation:orbit 8s ease-in-out infinite; }
-.hero-note { position:absolute; right:4%; bottom:16%; z-index:3; transform:rotate(-7deg); font-size:clamp(1.4rem,3vw,2.5rem); font-style:italic; font-weight:900; line-height:.95; text-shadow:0 0 25px rgba(0,170,255,.5); }.hero-note span { color:#6de4ff; }
-.product-card { transition:transform .25s,border-color .25s,background .25s; }
-@media (hover:hover) { .product-card:hover { transform:translateY(-4px); border-color:rgba(103,232,249,.5); background:rgba(255,255,255,.07); } }
-.dialog[open] { animation:rise .2s ease-out; }
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} } @keyframes orbit { 0%,100%{transform:scale(.98);opacity:.65} 50%{transform:scale(1.04);opacity:1} } @keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@media (prefers-reduced-motion:reduce) { *,*:before,*:after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
-@media (max-width:640px) { .hero-art { min-height:300px; } .hero-art img { max-height:300px; } .hero-grid:before { width:360px; height:360px; right:-120px; } }
+
+:root {
+  /* Paleta tirada do perfil @somosmobyze: azul-marinho profundo e off-white. */
+  --ink: #0d1730;
+  --navy: #16244a;
+  --navy-2: #1f3160;
+  --cream: #f0eee6;
+  --cream-2: #e4e1d6;
+  --steel: #8ea2cc;
+  --muted-on-navy: #b4bfd6;
+  --muted-on-cream: #4a5675;
+  --line: rgba(240, 238, 230, 0.16);
+  --focus: var(--cream);
+  color-scheme: dark;
+}
+
+@layer base {
+  html { scroll-padding-top: 5rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  body {
+    @apply bg-ink font-sans text-body text-cream antialiased;
+    font-feature-settings: "ss01", "tnum";
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  ::selection { background: var(--cream); color: var(--ink); }
+}
+
+/* Seções sobre fundo claro trocam a cor do anel de foco. */
+.on-cream { --focus: var(--ink); color-scheme: light; }
+
+/* Revelação única ao entrar na tela: só opacity + transform, só com JS ativo. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 420ms cubic-bezier(.2,.7,.2,1), transform 420ms cubic-bezier(.2,.7,.2,1);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  .js .reveal[data-visible="true"] { opacity: 1; transform: none; }
+
+  /* Entrada do hero na ordem de leitura. */
+  .hero-in {
+    animation: hero-in 520ms cubic-bezier(.2,.7,.2,1) both;
+    animation-delay: calc(var(--i, 0) * 100ms + 80ms);
+  }
+  @keyframes hero-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+}

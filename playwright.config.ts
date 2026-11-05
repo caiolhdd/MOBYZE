@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4173;
+const PREVIEW = 4173; // build de produção: valida o roteamento /chiqcell com fallback de SPA
+const DEV = 4174; // painel admin só existe no dev server
 
 export default defineConfig({
   testDir: "e2e",
@@ -8,11 +9,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
-  use: { baseURL: `http://localhost:${PORT}`, trace: "on-first-retry" },
+  use: { baseURL: `http://localhost:${PREVIEW}`, trace: "on-first-retry" },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    { name: "desktop", testIgnore: /admin\.spec/, use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", testIgnore: /admin\.spec/, use: { ...devices["Pixel 7"] } },
+    { name: "admin", testMatch: /admin\.spec/, use: { ...devices["Desktop Chrome"], baseURL: `http://localhost:${DEV}` } },
   ],
-  // Dev server (não o preview): o painel admin.html só existe em dev.
-  webServer: { command: `npx vite --port ${PORT} --strictPort`, port: PORT, reuseExistingServer: !process.env.CI },
+  webServer: [
+    { command: `npm run build && npx vite preview --port ${PREVIEW} --strictPort`, port: PREVIEW, reuseExistingServer: !process.env.CI, timeout: 120_000 },
+    { command: `npx vite --port ${DEV} --strictPort`, port: DEV, reuseExistingServer: !process.env.CI },
+  ],
 });
