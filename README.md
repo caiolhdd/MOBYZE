@@ -1,11 +1,25 @@
 # CHIQ CELL — site
 
-Site estático (HTML + CSS + JavaScript puro). Não precisa instalar nada.
+Site em React + Vite + Tailwind.
 
-## Como abrir
-Dê dois cliques em `index.html`. Abre direto no navegador.
+## Como rodar
+```bash
+npm install
+npm run dev      # desenvolvimento
+npm run build    # gera dist/ para publicar
+```
 
-## Estrutura
+## Onde editar
+- `src/config.ts` — número do WhatsApp, endereço e horário da loja. **Os valores atuais são de exemplo: troque antes de publicar.**
+- `src/data/products.ts` — catálogo (nome, preço, características e foto). Fotos ficam em `public/img/`; sem foto, o card mostra um placeholder.
+- `src/App.tsx` — estrutura e textos da página.
+- `tailwind.config.js` — cores (`ink`), raios e fonte.
+- Skills do Claude Code (design e vídeo) ficam versionadas em `.claude/skills/`.
+
+## Versão estática anterior (legado)
+Os arquivos abaixo (`admin.html`, `css/`, `js/`, `img/`) são da versão anterior em HTML puro e **não são usados pelo site React**. O `admin.html` edita `js/dados.js`, que o React não lê.
+
+### Estrutura (legado)
 ```
 chiq-cell/
 ├── index.html        estrutura da página
