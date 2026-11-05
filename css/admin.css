@@ -87,3 +87,4 @@ dialog form{display:flex;flex-direction:column;max-height:calc(100vh - 24px)}
   .foto-box{grid-template-columns:1fr}.foto-prev{max-width:180px}
   .logo small{display:block;margin:0}
 }
+label.check{display:flex;align-items:center;gap:8px}label.check input{width:auto}

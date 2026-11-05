@@ -1,5 +1,6 @@
 /* Painel de edição — CHIQ CELL
-   Edita LOJA, VENDEDORES e PRODUTOS (definidos em js/dados.js) e salva no navegador. */
+   Edita LOJA, VENDEDORES e PRODUTOS (carregados de src/data/catalogo.json por js/admin-boot.js)
+   e salva um rascunho no navegador, que o site em `npm run dev` usa como pré-visualização. */
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -11,10 +12,10 @@
   function setStatus(txt, cls) { statusEl.textContent = txt; statusEl.className = 'status ' + (cls || ''); }
   function salvar() {
     try {
-      localStorage.setItem(CHAVE, JSON.stringify({ LOJA, VENDEDORES, PRODUTOS }));
+      localStorage.setItem(CHAVE, JSON.stringify(montarCatalogo()));
       setStatus('✓ Salvo neste navegador', 'ok');
     } catch (e) {
-      setStatus('Memória do navegador cheia. Baixe o dados.js.', 'err');
+      setStatus('Memória do navegador cheia. Baixe o catalogo.json.', 'err');
     }
   }
   let timer;
@@ -182,6 +183,9 @@
     $('#dlg-titulo').textContent = i >= 0 ? 'Editar produto' : 'Novo produto';
     CAMPOS.forEach(c => { $('#f-' + c).value = p[c] || ''; });
     $('#f-cor').value = p.cor || '';
+    $('#f-condicao').value = p.condicao || '';
+    $('#f-bateria').value = p.bateria ?? '';
+    $('#f-disponivel').checked = p.disponivel !== false;
     $('#f-itens').value = (p.itens || []).join('\n');
     fotoAtual = p.foto || ''; mostrarFoto();
     dlg.showModal(); $('#f-nome').focus();
@@ -206,36 +210,33 @@
     const novo = {};
     CAMPOS.forEach(c => { novo[c] = $('#f-' + c).value.trim(); });
     novo.cor = $('#f-cor').value;
+    novo.condicao = $('#f-condicao').value || undefined;
+    const bat = $('#f-bateria').value.trim();
+    if (bat && !/^(100|\d{1,2})$/.test(bat)) { aviso('Saúde da bateria deve ser um número de 0 a 100.'); return; }
+    novo.bateria = bat ? Number(bat) : undefined;
+    novo.disponivel = $('#f-disponivel').checked ? undefined : false;
     novo.foto = fotoAtual;
     novo.itens = $('#f-itens').value.split('\n').map(t => t.trim()).filter(Boolean);
     if (editando >= 0) Object.assign(PRODUTOS[editando], novo); else PRODUTOS.push(novo);
     dlg.close(); renderProdutos(); salvarDepois(); aviso('Produto salvo.');
   });
 
-  /* ---------- baixar dados.js / descartar ---------- */
-  function gerarDadosJs() {
-    const j = o => JSON.stringify(o, null, 2);
-    return `/* =====================================================
-   DADOS DO SITE — gerado pelo painel (admin.html) em ${new Date().toLocaleString('pt-BR')}
-   Substitua o arquivo js/dados.js do projeto por este.
-   ===================================================== */
-let LOJA = ${j(LOJA)};
-
-let VENDEDORES = ${j(VENDEDORES)};
-
-let PRODUTOS = ${j(PRODUTOS)};
-`;
+  /* ---------- baixar catalogo.json / descartar ---------- */
+  // Remove campos vazios/indefinidos para o JSON publicado ficar limpo e válido pelo schema (src/data/schema.ts).
+  const limpar = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== ''));
+  function montarCatalogo() {
+    return { loja: LOJA, vendedores: VENDEDORES.map(limpar), produtos: PRODUTOS.map(limpar) };
   }
   $('#btn-baixar').addEventListener('click', () => {
-    const blob = new Blob([gerarDadosJs()], { type: 'text/javascript;charset=utf-8' });
+    const blob = new Blob([JSON.stringify(montarCatalogo(), null, 2) + '\n'], { type: 'application/json;charset=utf-8' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'dados.js';
+    a.href = URL.createObjectURL(blob); a.download = 'catalogo.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    aviso('dados.js baixado. Substitua o arquivo na pasta js/.');
+    aviso('catalogo.json baixado. Substitua o arquivo src/data/catalogo.json.');
   });
   $('#btn-reset').addEventListener('click', () => {
-    if (!confirm('Descartar tudo o que foi alterado neste navegador e voltar aos dados do arquivo js/dados.js?')) return;
+    if (!confirm('Descartar tudo o que foi alterado neste navegador e voltar aos dados do arquivo src/data/catalogo.json?')) return;
     try { localStorage.removeItem(CHAVE); } catch (e) { /* ignora */ }
     location.reload();
   });

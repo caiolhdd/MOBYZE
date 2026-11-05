@@ -14,15 +14,15 @@
       <div class="actions">
         <span id="status" class="status"></span>
         <a class="btn ghost" href="index.html" target="_blank" rel="noopener">Ver site ↗</a>
-        <button class="btn" id="btn-baixar" type="button">⬇ Baixar dados.js</button>
+        <button class="btn" id="btn-baixar" type="button">⬇ Baixar catalogo.json</button>
       </div>
     </div>
   </header>
 
   <main class="wrap">
     <div class="notice">
-      <b>Como funciona:</b> tudo o que você altera aqui fica salvo neste navegador e já aparece no site aberto <u>neste mesmo navegador</u>.
-      Para publicar de verdade, clique em <b>Baixar dados.js</b> e substitua o arquivo <code>js/dados.js</code> do projeto.
+      <b>Como funciona:</b> tudo o que você altera aqui fica salvo neste navegador e aparece no site rodando com <code>npm run dev</code> <u>neste mesmo navegador</u> (pré-visualização).
+      Para publicar de verdade, clique em <b>Baixar catalogo.json</b>, substitua o arquivo <code>src/data/catalogo.json</code> do projeto e rode <code>npm run build</code>.
     </div>
 
     <nav class="tabs" role="tablist">
@@ -81,7 +81,7 @@
           <div class="foto-actions">
             <label class="btn ghost file">📷 Enviar foto<input type="file" accept="image/*" id="f-arquivo" hidden></label>
             <button class="btn ghost" type="button" id="f-rmfoto">Remover foto</button>
-            <label class="small">ou caminho / link da imagem<input type="text" id="f-fotourl" placeholder="img/iphone-12.jpg"></label>
+            <label class="small">ou caminho / link da imagem<input type="text" id="f-fotourl" placeholder="/img/iphone-12.jpg"></label>
           </div>
         </div>
 
@@ -101,6 +101,13 @@
               <option value="">Escuro</option><option value="pink">Rosa</option><option value="blue">Azul</option><option value="purple">Roxo</option>
             </select>
           </label>
+          <label>Condição
+            <select id="f-condicao">
+              <option value="">Não informar</option><option value="novo">Novo</option><option value="seminovo">Seminovo</option>
+            </select>
+          </label>
+          <label>Saúde da bateria (%)<input id="f-bateria" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="Seminovos: ex. 89"></label>
+          <label class="full check"><input id="f-disponivel" type="checkbox" checked> Disponível em estoque (desmarque para exibir "Esgotado")</label>
           <label class="full">Destaques (um por linha)<textarea id="f-itens" rows="4" placeholder="Estrutura em titânio&#10;Botão de Ação&#10;USB-C"></textarea></label>
         </div>
         <datalist id="lista-grupos"></datalist>
@@ -114,8 +121,7 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/dados.js"></script>
-  <script src="js/salvo.js"></script>
-  <script src="js/admin.js"></script>
+  <!-- Painel só roda via `npm run dev` (http://localhost:5173/admin.html); não entra no build de produção. -->
+  <script type="module" src="/js/admin-boot.js"></script>
 </body>
 </html>

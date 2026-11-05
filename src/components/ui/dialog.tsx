@@ -1,7 +1,69 @@
-import { X } from "../icons";
-import { createContext, useContext } from "react";
-type DialogState = { open: boolean; onOpenChange: (open: boolean) => void };
-const DialogContext = createContext<DialogState>({ open: false, onOpenChange: () => {} });
-export function Dialog({ open, onOpenChange, children }: DialogState & { children: React.ReactNode }) { return <DialogContext.Provider value={{ open, onOpenChange }}>{children}</DialogContext.Provider>; }
-export function DialogContent({ className = "", children }: { className?: string; children: React.ReactNode }) { const { open, onOpenChange } = useContext(DialogContext); if (!open) return null; return <><div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm" onClick={() => onOpenChange(false)} /><div className={`fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-h-[90vh] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-cyan-300/20 bg-[#07111f] p-6 text-white shadow-2xl ${className}`}>{children}<button onClick={() => onOpenChange(false)} className="absolute right-4 top-4 rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white" aria-label="Fechar"><X size={18}/></button></div></>; }
-export function DialogTitle({ className = "", children }: { className?: string; children: React.ReactNode }) { return <h2 className={className}>{children}</h2>; }
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import { X } from "lucide-react";
+import { cn } from "../../lib/utils";
+
+type DialogProps = {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  className?: string;
+};
+
+/**
+ * Modal sobre <dialog> nativo: focus trap, Esc, inert do fundo e devolução de foco
+ * ao elemento de origem vêm do navegador — sem reimplementar acessibilidade à mão.
+ */
+export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (open && !el.open) {
+      el.showModal();
+      el.scrollTop = 0;
+      document.documentElement.style.overflow = "hidden";
+    } else if (!open && el.open) {
+      el.close();
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+    };
+  }, [open]);
+
+  return (
+    <dialog
+      ref={ref}
+      aria-labelledby={titleId}
+      // "close" cobre Esc e form[method=dialog]; mantém o estado React como fonte da verdade.
+      onClose={onClose}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className={cn(
+        "dialog m-auto max-h-[min(90dvh,860px)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto overscroll-contain rounded-3xl border border-cyan-300/20 bg-[#07111f] p-0 text-white shadow-2xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm",
+        className,
+      )}
+    >
+      {open && (
+        <>
+          {/* Cabeçalho fixo: título e "Fechar" continuam visíveis quando o conteúdo rola (ex.: abrir direto no orçamento). */}
+          <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07111f]/95 px-6 py-4 backdrop-blur sm:px-7">
+            <h2 id={titleId} className="text-xl font-black leading-tight sm:text-2xl">
+              {title}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="-mr-2 grid h-10 w-10 shrink-0 place-items-center rounded-full text-slate-300 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+              aria-label="Fechar"
+            >
+              <X size={20} aria-hidden />
+            </button>
+          </div>
+          <div className="px-6 pb-6 sm:px-7 sm:pb-7">{children}</div>
+        </>
+      )}
+    </dialog>
+  );
+}

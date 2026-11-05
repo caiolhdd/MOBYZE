@@ -1,51 +1,47 @@
 # CHIQ CELL — site
 
-Site estático (HTML + CSS + JavaScript puro). Não precisa instalar nada.
+Site em React + TypeScript + Tailwind (Vite).
 
-## Como abrir
-Dê dois cliques em `index.html`. Abre direto no navegador.
+## Rodar
+```bash
+npm install
+npm run dev      # site em http://localhost:5173 e painel em http://localhost:5173/admin.html
+npm run build    # gera a pasta dist/ para publicar
+```
 
 ## Estrutura
 ```
-chiq-cell/
-├── index.html        estrutura da página
-├── admin.html        PAINEL de edição (loja, vendedores e produtos)
-├── css/style.css     visual do site (cores no topo, em :root)
-├── css/admin.css     visual do painel
-├── js/dados.js       DADOS: loja, vendedores e produtos
-├── js/salvo.js       lê o que foi salvo pelo painel neste navegador
-├── js/main.js        funcionamento do site (filtros, janela de características, WhatsApp)
-├── js/admin.js       funcionamento do painel
-└── img/              fotos dos aparelhos
+index.html                     entrada do site (React)
+src/App.tsx                    página (topo, catálogo, sobre, vendedores, contato)
+src/data/catalogo.json         DADOS: loja, vendedores e produtos (fonte única)
+src/data/schema.ts             formato e validação dos dados (zod)
+src/features/catalogo/         catálogo: filtros, busca, ordenação, card, janela de detalhes/orçamento
+src/components/ui/             botão, card, badge, dialog (<dialog> nativo)
+public/img/                    fotos dos aparelhos (referencie como "/img/arquivo.jpg")
+admin.html, js/admin*.js       PAINEL de edição (só em `npm run dev`; não entra no build)
 ```
 
+## Catálogo
+- Filtro por linha, busca e ordenação ficam na URL (`?linha=15&q=pro&ordem=menor-preco`): o link é compartilhável e o botão "voltar" funciona.
+- Produto sem preço aparece como **Sob consulta**; sem foto (ou com foto quebrada), aparece a arte da cor escolhida.
+- Campos opcionais por produto: `preco`, `foto`, `condicao` (`"novo"` | `"seminovo"`), `bateria` (0–100), `disponivel` (`false` = esgotado).
+- "Pedir orçamento" abre a janela já na escolha do vendedor; a mensagem do WhatsApp vai com o nome do aparelho.
+- O `catalogo.json` é validado ao carregar: dado inválido quebra o build/dev em vez de quebrar o site em silêncio.
+
 ## Painel de edição (admin.html)
-Abra `admin.html` no navegador. Nele você:
-- edita endereço e horário da loja;
-- adiciona, edita, reordena e exclui vendedores (nome, WhatsApp e foto);
-- adiciona, edita, duplica e exclui produtos (textos, preço, características e foto). As fotos enviadas são reduzidas e comprimidas automaticamente.
+Com `npm run dev` rodando, abra `/admin.html`. As alterações ficam salvas como rascunho no navegador e aparecem no site **do dev server, no mesmo navegador**.
+**Para publicar:** clique em **Baixar catalogo.json**, substitua `src/data/catalogo.json` e rode `npm run build`.
 
-As alterações ficam salvas no navegador e já aparecem no `index.html` aberto no mesmo navegador.
-**Para publicar:** clique em **Baixar dados.js** e substitua o arquivo `js/dados.js` do projeto por ele. Depois suba a pasta para a hospedagem.
-
-**Segurança:** o painel não tem senha. NÃO envie `admin.html`, `css/admin.css` e `js/admin.js` para a hospedagem pública. Use o painel só no seu computador e publique apenas o site.
-
-## Edição manual (js/dados.js)
-- **LOJA**: endereço e horário.
-- **VENDEDORES**: nome, telefone (55 + DDD + número, só números) e foto opcional.
-- **PRODUTOS**: um bloco `{ ... }` por aparelho. Para adicionar, copie um bloco, cole depois da vírgula e troque os dados.
-  - `foto: 'img/iphone-12.jpg'` — coloque a imagem na pasta `img/` e escreva o caminho.
-  - `preco: 'R$ 2.999'` — opcional; se ficar vazio, o preço não aparece.
-  - `grupo` define o filtro (`'11'`, `'12'`, ..., `'SE'`, `'Xiaomi'`).
+O painel não tem senha e não é incluído no build de produção — publique só a pasta `dist/`.
 
 ## Cores
-No começo de `css/style.css`, em `:root`, ficam as cores (`--blue`, `--cyan`, `--bg`...).
+Cores e utilitários estão nas classes Tailwind dos componentes e em `src/styles.css`.
 
 ## Textos fixos (garantia, 21x, frete, sobre nós)
-Estão em `index.html`. Procure o texto e troque.
+Estão em `src/App.tsx`. Procure o texto e troque.
 
 ## Colocar no ar (grátis)
-Suba a pasta inteira em Netlify Drop (app.netlify.com/drop), Vercel, GitHub Pages ou Cloudflare Pages. Ou envie por FTP para sua hospedagem, mantendo as pastas.
+Rode `npm run build` e suba a pasta `dist/` em Netlify, Vercel, GitHub Pages ou Cloudflare Pages (ou por FTP).
 
 ## Importante
 - Os telefones dos vendedores são de exemplo. Troque antes de publicar.
