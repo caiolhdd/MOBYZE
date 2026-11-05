@@ -9,13 +9,21 @@ npm run dev      # site em http://localhost:5173 e painel em http://localhost:51
 npm run build    # gera a pasta dist/ para publicar
 ```
 
+## Testes
+```bash
+npm test           # unitários (Vitest): regras do catálogo e schema/dados publicados
+npm run test:e2e   # ponta a ponta (Playwright, desktop + mobile): filtros, URL, janela, orçamento, comparação, painel
+npm run typecheck
+```
+O CI (`.github/workflows/ci.yml`) roda tudo isso a cada push.
+
 ## Estrutura
 ```
 index.html                     entrada do site (React)
 src/App.tsx                    página (topo, catálogo, sobre, vendedores, contato)
 src/data/catalogo.json         DADOS: loja, vendedores e produtos (fonte única)
 src/data/schema.ts             formato e validação dos dados (zod)
-src/features/catalogo/         catálogo: filtros, busca, ordenação, card, janela de detalhes/orçamento
+src/features/catalogo/         catálogo: filtros, busca, ordenação, comparação, card, janela de detalhes/orçamento
 src/components/ui/             botão, card, badge, dialog (<dialog> nativo)
 public/img/                    fotos dos aparelhos (referencie como "/img/arquivo.jpg")
 admin.html, js/admin*.js       PAINEL de edição (só em `npm run dev`; não entra no build)
@@ -25,6 +33,7 @@ admin.html, js/admin*.js       PAINEL de edição (só em `npm run dev`; não en
 - Filtro por linha, busca e ordenação ficam na URL (`?linha=15&q=pro&ordem=menor-preco`): o link é compartilhável e o botão "voltar" funciona.
 - Produto sem preço aparece como **Sob consulta**; sem foto (ou com foto quebrada), aparece a arte da cor escolhida.
 - Campos opcionais por produto: `preco`, `foto`, `condicao` (`"novo"` | `"seminovo"`), `bateria` (0–100), `disponivel` (`false` = esgotado).
+- **Comparar:** marque até 3 aparelhos (botão "+" na foto) e clique em "Comparar". A tabela tem a opção "Mostrar só as diferenças"; a seleção fica na URL (`?comparar=iphone-15,iphone-16`).
 - "Pedir orçamento" abre a janela já na escolha do vendedor; a mensagem do WhatsApp vai com o nome do aparelho.
 - O `catalogo.json` é validado ao carregar: dado inválido quebra o build/dev em vez de quebrar o site em silêncio.
 

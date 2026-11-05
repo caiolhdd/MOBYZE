@@ -7,14 +7,17 @@ type DialogProps = {
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
-  className?: string;
+  /** Largura máxima; prop explícita em vez de className para não conflitar utilitários Tailwind. */
+  size?: keyof typeof LARGURAS;
 };
+
+const LARGURAS = { md: "max-w-lg", xl: "max-w-5xl" } as const;
 
 /**
  * Modal sobre <dialog> nativo: focus trap, Esc, inert do fundo e devolução de foco
  * ao elemento de origem vêm do navegador — sem reimplementar acessibilidade à mão.
  */
-export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+export function Dialog({ open, onClose, title, children, size = "md" }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -41,8 +44,8 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       onClose={onClose}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       className={cn(
-        "dialog m-auto max-h-[min(90dvh,860px)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto overscroll-contain rounded-3xl border border-cyan-300/20 bg-[#07111f] p-0 text-white shadow-2xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm",
-        className,
+        "dialog m-auto max-h-[min(90dvh,860px)] w-[calc(100%-2rem)] overflow-y-auto overscroll-contain rounded-3xl border border-cyan-300/20 bg-[#07111f] p-0 text-white shadow-2xl backdrop:bg-slate-950/80 backdrop:backdrop-blur-sm",
+        LARGURAS[size],
       )}
     >
       {open && (

@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 :root { font-family: Manrope, sans-serif; color-scheme: dark; background:#030711; }
-html { scroll-behavior:smooth; scroll-padding-top:90px; } body { margin:0; min-width:320px; }
+html { scroll-behavior:smooth; scroll-padding-top:90px; } body { margin:0; min-width:320px; padding-bottom:var(--altura-barra-comparacao,0px); }
 .text-gradient { background:linear-gradient(100deg,#1ca6ff,#7de7ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .hero-grid { position:relative; } .hero-grid:before { content:""; position:absolute; z-index:-1; width:650px; height:650px; right:-180px; top:-130px; border-radius:50%; background:radial-gradient(circle,rgba(0,140,255,.24),transparent 65%); filter:blur(16px); }
 .hero-art { position:relative; min-height:440px; display:grid; place-items:center; } .hero-art img { position:relative; z-index:2; max-width:88%; max-height:430px; object-fit:contain; filter:drop-shadow(0 28px 35px rgba(0,0,0,.7)); animation:float 6s ease-in-out infinite; }

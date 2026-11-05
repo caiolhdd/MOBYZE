@@ -85,3 +85,34 @@ export function especificacoes(p: Produto): [string, string][] {
   ];
   return linhas.filter((l): l is [string, string] => !!l[1]);
 }
+
+export const MAX_COMPARACAO = 3;
+
+export type LinhaComparacao = { rotulo: string; valores: (string | undefined)[]; iguais: boolean };
+
+/**
+ * Linhas da tabela de comparação. Linhas em que nenhum produto tem valor são omitidas;
+ * `iguais` permite à UI destacar só o que de fato diferencia os modelos.
+ */
+export function tabelaComparacao(produtos: Produto[]): LinhaComparacao[] {
+  const campos: [string, (p: Produto) => string | undefined][] = [
+    ["Preço", (p) => p.preco ?? "Sob consulta"],
+    ["Condição", (p) => (p.condicao === "novo" ? "Novo" : p.condicao === "seminovo" ? "Seminovo" : undefined)],
+    ["Disponibilidade", (p) => (p.disponivel === false ? "Esgotado" : "Disponível")],
+    ["Lançamento", (p) => p.lanc],
+    ["Chip", (p) => p.chip],
+    ["Tela", (p) => p.tela],
+    ["Câmeras traseiras", (p) => p.camera],
+    ["Câmera frontal", (p) => p.frontal],
+    ["Armazenamento", (p) => p.arm],
+    ["Saúde da bateria", (p) => (p.bateria !== undefined ? `${p.bateria}%` : undefined)],
+    ["Cores", (p) => p.cores],
+    ["Destaques", (p) => (p.itens.length ? p.itens.join(" · ") : undefined)],
+  ];
+  return campos
+    .map(([rotulo, ler]) => {
+      const valores = produtos.map(ler);
+      return { rotulo, valores, iguais: valores.every((v) => v === valores[0]) };
+    })
+    .filter((l) => l.valores.some((v) => v !== undefined));
+}

@@ -4,9 +4,12 @@ import type { Produto, Vendedor } from "../../data/schema";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { BarraComparacao } from "./BarraComparacao";
+import { ComparacaoDialog } from "./ComparacaoDialog";
 import { ProdutoCard } from "./ProdutoCard";
 import { ProdutoDialog } from "./ProdutoDialog";
 import { ORDENACOES, TODOS, filtrarProdutos, isOrdenacao, ordenarGrupos, rotuloGrupo } from "./regras";
+import { useComparacaoNaUrl } from "./useComparacaoNaUrl";
 import { useFiltroNaUrl } from "./useFiltroNaUrl";
 
 type Props = { produtos: Produto[]; vendedores: Vendedor[] };
@@ -16,6 +19,12 @@ export function Catalogo({ produtos, vendedores }: Props) {
   const [filtro, atualizar] = useFiltroNaUrl(grupos);
   const visiveis = useMemo(() => filtrarProdutos(produtos, filtro), [produtos, filtro]);
   const [aberto, setAberto] = useState<{ produto: Produto; foco: "detalhes" | "orcamento" } | null>(null);
+
+  const porId = useMemo(() => new Map(produtos.map((p) => [p.id, p])), [produtos]);
+  const idsValidos = useMemo(() => new Set(porId.keys()), [porId]);
+  const comparacao = useComparacaoNaUrl(idsValidos);
+  const selecionados = comparacao.ids.map((id) => porId.get(id)!);
+  const [comparando, setComparando] = useState(false);
 
   const limpar = () => atualizar({ grupo: TODOS, busca: "" });
 
@@ -87,7 +96,13 @@ export function Catalogo({ produtos, vendedores }: Props) {
         <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {visiveis.map((p) => (
             <li key={p.id} className="flex">
-              <ProdutoCard produto={p} onAbrir={(produto, foco) => setAberto({ produto, foco })} />
+              <ProdutoCard
+                produto={p}
+                onAbrir={(produto, foco) => setAberto({ produto, foco })}
+                comparando={comparacao.ids.includes(p.id)}
+                podeComparar={!comparacao.cheio}
+                onAlternarComparacao={comparacao.alternar}
+              />
             </li>
           ))}
         </ul>
@@ -102,6 +117,16 @@ export function Catalogo({ produtos, vendedores }: Props) {
         </div>
       )}
 
+      <BarraComparacao selecionados={selecionados} onRemover={comparacao.alternar} onLimpar={comparacao.limpar} onComparar={() => setComparando(true)} />
+      <ComparacaoDialog
+        open={comparando && selecionados.length >= 2}
+        produtos={selecionados}
+        onClose={() => setComparando(false)}
+        onPedirOrcamento={(produto) => {
+          setComparando(false);
+          setAberto({ produto, foco: "orcamento" });
+        }}
+      />
       <ProdutoDialog produto={aberto?.produto ?? null} foco={aberto?.foco ?? "detalhes"} vendedores={vendedores} onClose={() => setAberto(null)} />
     </section>
   );
