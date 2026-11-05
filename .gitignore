@@ -3,3 +3,5 @@ dist/
 *.tsbuildinfo
 .claude/*
 !.claude/skills/
+.env
+.env.local
