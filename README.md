@@ -1,53 +1,77 @@
-# CHIQ CELL — site
+# Mobyze · página principal
 
-Site estático (HTML + CSS + JavaScript puro). Não precisa instalar nada.
+Página inicial da Mobyze (sites e aplicativos), em React + TypeScript + Tailwind, com Vite.
+O mesmo deploy serve também o site de cliente **CHIQ CELL** em `/chiqcell` (ver abaixo).
+As decisões visuais estão em [`DESIGN.md`](DESIGN.md).
 
-## Como abrir
-Dê dois cliques em `index.html`. Abre direto no navegador.
+## Rodar
+
+```bash
+npm install
+npm run dev      # desenvolvimento
+npm run build    # checa tipos e gera dist/
+npm test         # unitários (Vitest)
+npm run test:e2e # ponta a ponta (Playwright) contra o build de produção
+```
+O CI (`.github/workflows/ci.yml`) roda typecheck, testes, build e e2e a cada push.
+
+## Rotas
+
+| Caminho | Site |
+|---|---|
+| `/` (e qualquer outro) | Mobyze |
+| `/chiqcell`, `/chiqcell/...` | CHIQ CELL |
+
+`src/main.tsx` decide pelo caminho (`src/rotas.ts`) e carrega **só** o chunk do site pedido, cada um com o próprio CSS e config Tailwind (`tailwind.config.js` / `tailwind.chiqcell.config.js`), para os temas não vazarem um no outro.
+O roteamento é no cliente porque a hospedagem faz fallback de SPA para o `index.html`; os e2e validam isso no build de produção.
+Para adicionar outro site de cliente: nova pasta em `src/<cliente>/` com `main.tsx` exportando `montar()`, uma regra em `src/rotas.ts` e um config Tailwind próprio.
+
+## Contato
+
+Copie `.env.example` para `.env` e preencha o WhatsApp (país + DDD + número, só dígitos):
+
+```
+VITE_WHATSAPP_NUMBER=5511999999999
+```
+
+Sem a variável, todos os botões de contato abrem o DM do Instagram `@somosmobyze`.
 
 ## Estrutura
+
 ```
-chiq-cell/
-├── index.html        estrutura da página
-├── admin.html        PAINEL de edição (loja, vendedores e produtos)
-├── css/style.css     visual do site (cores no topo, em :root)
-├── css/admin.css     visual do painel
-├── js/dados.js       DADOS: loja, vendedores e produtos
-├── js/salvo.js       lê o que foi salvo pelo painel neste navegador
-├── js/main.js        funcionamento do site (filtros, janela de características, WhatsApp)
-├── js/admin.js       funcionamento do painel
-└── img/              fotos dos aparelhos
+src/
+├── App.tsx            composição da página e estado do serviço escolhido
+├── config.ts          Instagram e WhatsApp
+├── data/              serviços e caminhos ("por onde começar")
+├── lib/contact.ts     monta a mensagem e o link do canal
+├── sections/          Header, Hero, Statement, Services, Paths, Contact, Footer
+├── components/        Logo, Icons, Button, Reveal
+├── styles.css         tokens de cor e movimento
+├── mobyze.tsx         boot do site da Mobyze
+├── main.tsx, rotas.ts roteador de entrada
+└── chiqcell/          site CHIQ CELL (isolado, ver abaixo)
 ```
 
-## Painel de edição (admin.html)
-Abra `admin.html` no navegador. Nele você:
-- edita endereço e horário da loja;
-- adiciona, edita, reordena e exclui vendedores (nome, WhatsApp e foto);
-- adiciona, edita, duplica e exclui produtos (textos, preço, características e foto). As fotos enviadas são reduzidas e comprimidas automaticamente.
+## Skills do projeto
 
-As alterações ficam salvas no navegador e já aparecem no `index.html` aberto no mesmo navegador.
-**Para publicar:** clique em **Baixar dados.js** e substitua o arquivo `js/dados.js` do projeto por ele. Depois suba a pasta para a hospedagem.
+`.claude/skills/ui-humanizer` e `.claude/skills/revenue-centric-design`.
+Auditoria de interface: `python3 -I .claude/skills/ui-humanizer/scripts/audit.py index.html src`
 
-**Segurança:** o painel não tem senha. NÃO envie `admin.html`, `css/admin.css` e `js/admin.js` para a hospedagem pública. Use o painel só no seu computador e publique apenas o site.
+## CHIQ CELL (`/chiqcell`)
 
-## Edição manual (js/dados.js)
-- **LOJA**: endereço e horário.
-- **VENDEDORES**: nome, telefone (55 + DDD + número, só números) e foto opcional.
-- **PRODUTOS**: um bloco `{ ... }` por aparelho. Para adicionar, copie um bloco, cole depois da vírgula e troque os dados.
-  - `foto: 'img/iphone-12.jpg'` — coloque a imagem na pasta `img/` e escreva o caminho.
-  - `preco: 'R$ 2.999'` — opcional; se ficar vazio, o preço não aparece.
-  - `grupo` define o filtro (`'11'`, `'12'`, ..., `'SE'`, `'Xiaomi'`).
+Catálogo de aparelhos com busca, filtros e ordenação na URL, comparação de até 3 modelos e pedido de orçamento pelo WhatsApp já citando o aparelho.
 
-## Cores
-No começo de `css/style.css`, em `:root`, ficam as cores (`--blue`, `--cyan`, `--bg`...).
+```
+src/chiqcell/
+├── main.tsx              boot (aplica título/metas próprios)
+├── App.tsx               página
+├── data/catalogo.json    DADOS: loja, vendedores e produtos (fonte única, validada por data/schema.ts)
+├── features/catalogo/    catálogo, comparação, janela de detalhes/orçamento e regras puras
+└── components/ui/        botão, card, badge, dialog (<dialog> nativo)
+public/chiqcell/img/      fotos (referencie como "/chiqcell/img/arquivo.jpg")
+tools/chiqcell-admin/     painel de edição (só em dev; não entra no build)
+```
 
-## Textos fixos (garantia, 21x, frete, sobre nós)
-Estão em `index.html`. Procure o texto e troque.
-
-## Colocar no ar (grátis)
-Suba a pasta inteira em Netlify Drop (app.netlify.com/drop), Vercel, GitHub Pages ou Cloudflare Pages. Ou envie por FTP para sua hospedagem, mantendo as pastas.
-
-## Importante
-- Os telefones dos vendedores são de exemplo. Troque antes de publicar.
-- Confira as características de cada modelo no site da Apple Brasil.
-- Use apenas fotos que você tenha direito de usar comercialmente (fotos próprias ou do fornecedor).
+- Campos opcionais por produto: `preco` (sem ele: "Sob consulta"), `foto`, `condicao` (`"novo"`|`"seminovo"`), `bateria` (0–100), `disponivel` (`false` = esgotado).
+- **Painel:** com `npm run dev`, abra `/tools/chiqcell-admin/`. As alterações ficam como rascunho no navegador e aparecem em `/chiqcell` no dev server. Para publicar: **Baixar catalogo.json**, substituir `src/chiqcell/data/catalogo.json` e fazer o deploy.
+- Antes de publicar: trocar os telefones de exemplo dos vendedores e usar só fotos com direito de uso comercial.

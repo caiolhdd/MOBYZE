@@ -1,4 +1,9 @@
 node_modules/
 dist/
 *.tsbuildinfo
-.claude/
+.claude/*
+!.claude/skills/
+.env
+.env.local
+test-results/
+playwright-report/
